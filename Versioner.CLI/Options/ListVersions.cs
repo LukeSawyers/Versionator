@@ -1,7 +1,7 @@
 using CommandLine;
 
-[Verb("check-in", HelpText = "Check in a specific version of a file")]
-public class CheckIn : VerbBase
+[Verb("list-versions", HelpText = "List all available versions of a file")]
+public class ListVersions : VerbBase
 {
     [Option('v', Required = false, HelpText = "The version to check in. If blank the current version will be used")]
     public string? Version { get; set; }

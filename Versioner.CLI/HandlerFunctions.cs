@@ -14,6 +14,7 @@ public static class HandlerFunctions
 
         await controller.CheckOutVersionAsync(DocumentVersion.Parse(args.Version));
     }
+    
     public static async Task CheckInAsync(CheckIn args)
     {
         var controller = await DocumentController.CreateAsync(args.File);
@@ -40,8 +41,37 @@ public static class HandlerFunctions
             ? (DocumentVersion?)null
             : DocumentVersion.Parse(args.Version);
 
-        await (version == null
-            ? controller.CheckInCurrentVersionAsync(changes)
-            : controller.CheckInVersionAsync(version.Value, changes));
+        if (version == null)
+        {
+            await controller.CheckInCurrentVersionAsync(changes);
+            Console.WriteLine($"Checked in the current version of {Path.GetFileName(args.File)}");
+        }
+        else
+        {
+            await controller.CheckInVersionAsync(version.Value, changes);
+            Console.WriteLine($"Checked in {Path.GetFileName(args.File)} version {version.Value}");
+        }
+    }
+    
+    public static async Task ListVersionsAsync(ListVersions args)
+    {
+        var controller = await DocumentController.CreateAsync(args.File);
+        if (controller == null)
+        {
+            return;
+        }
+
+        var index = await controller.GetVersionIndexAsync();
+        var currentVersion = await controller.GetCheckedOutVersionAsync();
+
+        foreach (var (version, info) in index)
+        {
+            Console.Write(version.ToVersionString());
+            if (version == currentVersion)
+            {
+                Console.Write("* ");
+            }
+            Console.WriteLine();
+        }
     }
 }

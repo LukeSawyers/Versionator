@@ -72,16 +72,8 @@ public class DocumentController
 
     public async Task<Dictionary<DocumentVersion, DocumentVersionInfo>> GetVersionIndexAsync()
     {
-        try
-        {
-            var indexFile = GetIndexFile();
-            return JsonConvert.DeserializeObject<Dictionary<DocumentVersion, DocumentVersionInfo>>(
-                await File.ReadAllTextAsync(indexFile)) ?? new();
-        }
-        catch (Exception ex)
-        {
-            return new();
-        }
+        var dict = await GetVersionIndexInternalAsync();
+        return dict.ToDictionary(p => DocumentVersion.Parse(p.Key), p => p.Value);
     }
 
     private string GetIndexFile() => Path.Combine(_dataFolder, "version-index.json");
@@ -91,7 +83,21 @@ public class DocumentController
         _dataFolder, "versions", $"{version.Major}-{version.Minor}-{version.Revision}"
     );
 
-    private async Task SaveVersionIndexAsync(Dictionary<DocumentVersion, DocumentVersionInfo> index)
+    private async Task<Dictionary<string, DocumentVersionInfo>> GetVersionIndexInternalAsync()
+    {
+        try
+        {
+            var indexFile = GetIndexFile();
+            return JsonConvert.DeserializeObject<Dictionary<string, DocumentVersionInfo>>(
+                await File.ReadAllTextAsync(indexFile)) ?? new();
+        }
+        catch (Exception ex)
+        {
+            return new();
+        }
+    }
+
+    private async Task SaveVersionIndexAsync(Dictionary<string, DocumentVersionInfo> index)
     {
         var indexFile = Path.Combine(_dataFolder, "version-index.json");
         Directory.CreateDirectory(_dataFolder);
@@ -116,8 +122,9 @@ public class DocumentController
     public async Task CheckInVersionAsync(DocumentVersion version, ChangeLog[] changes)
     {
         // Update the index
-        var index = await GetVersionIndexAsync();
-        var info = index.GetValueOrDefault(version) ??
+        var index = await GetVersionIndexInternalAsync();
+        var versionString = version.ToVersionString();
+        var info = index.GetValueOrDefault(versionString) ??
                    new DocumentVersionInfo(DateTime.Now, DateTime.Now, null, Array.Empty<ChangeLog>());
 
         info = info with
@@ -126,7 +133,7 @@ public class DocumentController
             Changes = info.Changes.Concat(changes).ToArray()
         };
 
-        index[version] = info;
+        index[versionString] = info;
         await SaveVersionIndexAsync(index);
 
         // Syncrhonise files to version
@@ -156,7 +163,7 @@ public class DocumentController
         {
             File.Delete(dst);
         }
-        
+
         foreach (var file in srcFiles)
         {
             var fileName = Path.GetFileName(file);

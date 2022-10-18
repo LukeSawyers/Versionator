@@ -17,4 +17,6 @@ public record struct DocumentVersion(int Major = 1, int Minor = 0, int Revision 
             numbers.ElementAtOrDefault(2) ?? 0
         );
     }
+
+    public string ToVersionString() => $"{Major}.{Minor}.{Revision}";
 }

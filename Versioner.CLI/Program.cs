@@ -2,9 +2,10 @@
 
 using CommandLine;
 
-await Parser.Default.ParseArguments<CheckOut, CheckIn>(args)
-    .MapResult<CheckOut, CheckIn, Task>(
+await Parser.Default.ParseArguments<CheckOut, CheckIn, ListVersions>(args)
+    .MapResult<CheckOut, CheckIn, ListVersions, Task>(
         HandlerFunctions.CheckOutAsync,
         HandlerFunctions.CheckInAsync,
-        async e => {}
+        HandlerFunctions.ListVersionsAsync,
+        async e => { }
     );
