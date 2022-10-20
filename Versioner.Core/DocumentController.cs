@@ -3,22 +3,14 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
 
 namespace Versioner.Core;
 
-public static class DocumentControllerExtensions
+public enum CommitResult
 {
-    public static async Task CheckInCurrentVersionAsync(this DocumentController controller, ChangeLog[] changes)
-    {
-        var currentVersion = await controller.GetCheckedOutVersionAsync();
-        if (currentVersion is not DocumentVersion version)
-        {
-            return;
-        }
-
-        await controller.CheckInVersionAsync(version, changes);
-    }
+    Ok,
+    AlreadyCommitted,
+    NoSuchVersion
 }
 
 public class DocumentController
@@ -35,73 +27,20 @@ public class DocumentController
         return controller;
     }
 
-    public const string DataFolderRoot = ".versionator";
-
     public string FilePath { get; }
     public string FileDirectory { get; }
-    public DocumentControlOptions Options { get; private set; } = new();
 
-    private readonly string _fileName;
-    private readonly string _dataFolder;
+    public DocumentControlInformationAccessor Accessor { get; private set; }
 
     private DocumentController(string filePath)
     {
         FilePath = filePath;
         FileDirectory = Path.GetDirectoryName(FilePath)!;
-        _fileName = Path.GetFileName(filePath).Replace(Path.GetExtension(filePath), "");
-        _dataFolder = Path.Combine(FileDirectory, DataFolderRoot, _fileName);
-        Directory.CreateDirectory(_dataFolder);
+        Accessor = new(filePath);
     }
 
     public async Task ReinitialiseAsync()
     {
-    }
-
-    public async Task<DocumentVersion?> GetCheckedOutVersionAsync()
-    {
-        try
-        {
-            return JsonConvert.DeserializeObject<DocumentVersion>(
-                await File.ReadAllTextAsync(GetCheckedOutVersionFile()));
-        }
-        catch
-        {
-            return null;
-        }
-    }
-
-    public async Task<Dictionary<DocumentVersion, DocumentVersionInfo>> GetVersionIndexAsync()
-    {
-        var dict = await GetVersionIndexInternalAsync();
-        return dict.ToDictionary(p => DocumentVersion.Parse(p.Key), p => p.Value);
-    }
-
-    private string GetIndexFile() => Path.Combine(_dataFolder, "version-index.json");
-    private string GetCheckedOutVersionFile() => Path.Combine(_dataFolder, "checked-out-version.json");
-
-    private string GetFolderForVersion(DocumentVersion version) => Path.Combine(
-        _dataFolder, "versions", $"{version.Major}-{version.Minor}-{version.Revision}"
-    );
-
-    private async Task<Dictionary<string, DocumentVersionInfo>> GetVersionIndexInternalAsync()
-    {
-        try
-        {
-            var indexFile = GetIndexFile();
-            return JsonConvert.DeserializeObject<Dictionary<string, DocumentVersionInfo>>(
-                await File.ReadAllTextAsync(indexFile)) ?? new();
-        }
-        catch (Exception ex)
-        {
-            return new();
-        }
-    }
-
-    private async Task SaveVersionIndexAsync(Dictionary<string, DocumentVersionInfo> index)
-    {
-        var indexFile = Path.Combine(_dataFolder, "version-index.json");
-        Directory.CreateDirectory(_dataFolder);
-        await File.WriteAllTextAsync(indexFile, JsonConvert.SerializeObject(index, Formatting.Indented));
     }
 
     public async Task RenameAsync(string newName)
@@ -114,49 +53,111 @@ public class DocumentController
         throw new NotImplementedException("TODO");
     }
 
-    public async Task CommitVersionAsync(DocumentVersion version)
+    public async Task<CommitResult> CommitVersionAsync(DocumentVersion version)
     {
-        throw new NotImplementedException("TODO");
+        var index = await Accessor.GetVersionIndexAsync();
+        var info = index.GetValueOrDefault(version);
+        if (info == null)
+        {
+            return CommitResult.NoSuchVersion;
+        }
+
+        if (info.CommittedDate != null)
+        {
+            return CommitResult.AlreadyCommitted;
+        }
+
+        index[version] = info with
+        {
+            Committer = Environment.UserName,
+            CommittedDate = DateTime.Now
+        };
+
+        await Accessor.SaveVersionIndexAsync(index);
+
+        return CommitResult.Ok;
     }
 
-    public async Task CheckInVersionAsync(DocumentVersion version, ChangeLog[] changes)
+    public async Task<CheckInResult> CheckInVersionAsync(DocumentVersion version, ChangeLog[] changes)
     {
+        var options = await Accessor.GetOptionsAsync();
+        var index = await Accessor.GetVersionIndexAsync();
+        var info = index.GetValueOrDefault(version);
+
+        if (info?.CommittedDate != null)
+        {
+            return CheckInResult.Committed;
+        }
+
         // Update the index
-        var index = await GetVersionIndexInternalAsync();
-        var versionString = version.ToVersionString();
-        var info = index.GetValueOrDefault(versionString) ??
-                   new DocumentVersionInfo(DateTime.Now, DateTime.Now, null, Array.Empty<ChangeLog>());
+        info ??= new DocumentVersionInfo { Creator = Environment.UserName };
 
         info = info with
         {
             LastCheckInDate = DateTime.Now,
+            LastEditor = Environment.UserName,
             Changes = info.Changes.Concat(changes).ToArray()
         };
 
-        index[versionString] = info;
-        await SaveVersionIndexAsync(index);
+        index[version] = info;
+        await Accessor.SaveVersionIndexAsync(index);
 
         // Syncrhonise files to version
-        var versionFolder = GetFolderForVersion(version);
-        await SynchroniseFilesAsync(FileDirectory, versionFolder);
+
+        var versionedFileName = await GetVersionedFileNameAsync(version, options);
+        await SynchroniseFilesAsync(
+            FileDirectory,
+            Accessor.FileName,
+            Accessor.FileStorageFolder,
+            versionedFileName
+        );
+        await Accessor.SetCurrentVersionAsync(version);
+
+        return CheckInResult.Ok;
     }
 
     public async Task CheckOutVersionAsync(DocumentVersion version)
     {
-        var versionFolder = GetFolderForVersion(version);
-        await SynchroniseFilesAsync(versionFolder, FileDirectory);
-        await File.WriteAllTextAsync(GetCheckedOutVersionFile(), JsonConvert.SerializeObject(version));
+        var options = await Accessor.GetOptionsAsync();
+        var versionedFileName = await GetVersionedFileNameAsync(version, options);
+        await SynchroniseFilesAsync(
+            Accessor.FileStorageFolder,
+            versionedFileName,
+            FileDirectory,
+            Accessor.FileName
+        );
+        await Accessor.SetCurrentVersionAsync(version);
     }
 
-    private async Task SynchroniseFilesAsync(string srcFolder, string dstFolder)
+    private async Task<string> GetVersionedFileNameAsync(DocumentVersion version, DocumentControlOptions? opts = null)
     {
-        var srcFiles = GetFilesFromFolder(srcFolder);
-        var srcFileNames = srcFiles.Select(Path.GetFileName).ToArray();
-        Directory.CreateDirectory(dstFolder);
-        var dstFiles = GetFilesFromFolder(dstFolder);
+        var options = opts ?? await Accessor.GetOptionsAsync();
+        return options.VersionNamingFormat
+            .Replace("{Name}", Accessor.FileName)
+            .Replace("{Version}", version.ToVersionString());
+    }
 
-        var deleteFromDst = dstFiles
-            .Where(d => !srcFileNames.Contains(Path.GetFileName(d)))
+    private async Task SynchroniseFilesAsync(
+        string srcFolder,
+        string srcFileName,
+        string dstFolder,
+        string dstFileName
+    )
+    {
+        var srcFilePaths = GetFilesFromFolder(srcFolder, srcFileName);
+        var srcFileTails = srcFilePaths
+            .Select(n => Path.GetFileName(n).Replace(srcFileName, ""))
+            .ToArray();
+
+        Directory.CreateDirectory(dstFolder);
+
+        var dstFilePaths = GetFilesFromFolder(dstFolder, dstFileName);
+        var deleteFromDst = dstFilePaths
+            .Where(path =>
+            {
+                var tail = Path.GetFileName(path).Replace(dstFileName, "");
+                return !srcFileTails.Contains(tail);
+            })
             .ToArray();
 
         foreach (var dst in deleteFromDst)
@@ -164,16 +165,16 @@ public class DocumentController
             File.Delete(dst);
         }
 
-        foreach (var file in srcFiles)
+        foreach (var srcFile in srcFilePaths)
         {
-            var fileName = Path.GetFileName(file);
-            var destinationPath = Path.Combine(dstFolder, fileName);
-            File.Copy(file, destinationPath, true);
+            var tail = Path.GetFileName(srcFile).Replace(srcFileName, ""); 
+            var destinationPath = Path.Combine(dstFolder, dstFileName + tail);
+            File.Copy(srcFile, destinationPath, true);
         }
     }
 
-    private string[] GetFilesFromFolder(string versionFolder) =>
-        Directory.GetFiles(versionFolder, $"{_fileName}.*", SearchOption.TopDirectoryOnly);
+    private string[] GetFilesFromFolder(string versionFolder, string fileName) =>
+        Directory.GetFiles(versionFolder, $"{fileName}*", SearchOption.TopDirectoryOnly);
 
     public async Task CreateNewVersionFromOldAsync(DocumentVersion oldVersion, VersionNumber increment)
     {

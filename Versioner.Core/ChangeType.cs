@@ -7,5 +7,6 @@ public enum ChangeType
     Unknown,
     Addition,
     Modification,
+    Fixup,
     Deletion
 }
