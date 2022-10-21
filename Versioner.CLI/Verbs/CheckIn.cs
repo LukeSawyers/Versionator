@@ -24,13 +24,18 @@ public record CheckIn : VerbBase
 
     public static async Task RunAsync(CheckIn args)
     {
-        var controller = await DocumentController.CreateAsync(args.File);
+        using var controller = await DocumentController.CreateAsync(args.File);
         if (controller == null)
         {
             return;
         }
 
-        IEnumerable<ChangeLog> GetChanges(IEnumerable<string> tokens, ChangeType type)
+        await RunAsync(controller, args);
+    }
+
+    public static async Task RunAsync(DocumentController controller, CheckIn args)
+    {
+                IEnumerable<ChangeLog> GetChanges(IEnumerable<string> tokens, ChangeType type)
         {
             var str = string.Join(' ', tokens);
 
@@ -73,7 +78,7 @@ public record CheckIn : VerbBase
             var result = await controller.CheckInVersionAsync(version, changes);
             var print = result switch
             {
-                CheckInResult.Ok => $"Checked in {Path.GetFileName(args.File)} tp version {version.ToVersionString()}",
+                CheckInResult.Ok => $"Checked in {Path.GetFileName(args.File)} to version {version.ToVersionString()}",
                 CheckInResult.Committed =>
                     $"Could not check in version {version.ToVersionString()} as the version has been committed. Consider checking in as a new version",
                 _ => throw new ArgumentOutOfRangeException()

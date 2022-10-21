@@ -6,7 +6,7 @@ public record Open : VerbBase
 {
     public static async Task RunAsync(Open args)
     {
-        var controller = await DocumentController.CreateAsync(args.File);
+        using var controller = await DocumentController.CreateAsync(args.File);
         if (controller == null)
         {
             return;
@@ -30,10 +30,10 @@ public record Open : VerbBase
 
             await Parser.Default.ParseArguments<CheckOut, CheckIn, ListVersions, Commit>(newArgs)
                 .MapResult<CheckOut, CheckIn, ListVersions, Commit, Task>(
-                    co => CheckOut.RunAsync(co with { File = args.File }),
-                    ci => CheckIn.RunAsync(ci with { File = args.File }),
-                    lv => ListVersions.RunAsync(lv with { File = args.File }),
-                    cm => Commit.RunAsync(cm with { File = args.File }),
+                    co => CheckOut.RunAsync(controller, co with { File = args.File }),
+                    ci => CheckIn.RunAsync(controller, ci with { File = args.File }),
+                    lv => ListVersions.RunAsync(controller, lv with { File = args.File }),
+                    cm => Commit.RunAsync(controller, cm with { File = args.File }),
                     async e => Console.WriteLine(string.Join(Environment.NewLine, e))
                 );
         }

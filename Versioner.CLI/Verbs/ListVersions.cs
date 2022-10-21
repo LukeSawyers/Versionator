@@ -9,12 +9,17 @@ public record ListVersions : VerbBase
 
     public static async Task RunAsync(ListVersions args)
     {
-        var controller = await DocumentController.CreateAsync(args.File);
+        using var controller = await DocumentController.CreateAsync(args.File);
         if (controller == null)
         {
             return;
         }
 
+        await RunAsync(controller, args);
+    }
+
+    public static async Task RunAsync(DocumentController controller, ListVersions args)
+    {
         var index = await controller.Accessor.GetVersionIndexAsync();
         var versions = index
             .Select(p => (p.Key.ToVersionString(), p.Value))

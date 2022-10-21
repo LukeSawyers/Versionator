@@ -2,6 +2,7 @@ namespace Versioner.Core;
 
 public enum VersioningType
 {
+    Semantic4,
     Semantic3,
     Semantic2,
     Semantic1,

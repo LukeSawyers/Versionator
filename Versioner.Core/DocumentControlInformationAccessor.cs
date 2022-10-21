@@ -10,7 +10,7 @@ namespace Versioner.Core;
 
 public class DocumentControlInformationAccessor
 {
-    public const string DataFolderRoot = ".versionator";
+    public const string DataFolderRoot = ".vn8r";
 
     public string FileName { get; }
     public string FileDataFolder { get; }
@@ -29,11 +29,10 @@ public class DocumentControlInformationAccessor
     {
         var fileDirectory = Path.GetDirectoryName(filePath)!;
         FileName = Path.GetFileName(filePath).Replace(Path.GetExtension(filePath), "");
-        var dataFolder = Path.Combine(fileDirectory, DataFolderRoot);
-        FileDataFolder = Path.Combine(dataFolder, FileName);
+        FileDataFolder = Path.Combine(fileDirectory, $"{DataFolderRoot}.{FileName}");
         FileStorageFolder = Path.Combine(FileDataFolder, "store");
 
-        Directory.CreateDirectory(dataFolder).Attributes |= FileAttributes.Hidden;
+        Directory.CreateDirectory(FileDataFolder).Attributes |= FileAttributes.Hidden;
         Directory.CreateDirectory(FileDataFolder);
     }
 

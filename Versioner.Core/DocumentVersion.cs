@@ -52,6 +52,7 @@ public class DocumentVersion : OneOfBase<string, Version>
                 '.',
                 _type switch
                 {
+                    VersioningType.Semantic4 => new[] { ver.Major, ver.Minor, ver.Build, ver.Revision },
                     VersioningType.Semantic3 => new[] { ver.Major, ver.Minor, ver.Build },
                     VersioningType.Semantic2 => new[] { ver.Major, ver.Minor },
                     VersioningType.Semantic1 => new[] { ver.Major },
@@ -60,6 +61,4 @@ public class DocumentVersion : OneOfBase<string, Version>
             )
         );
     }
-
-    public string ToVersionString() => $"{Major}.{Minor}.{Revision}";
 }

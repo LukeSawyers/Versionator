@@ -9,17 +9,22 @@ public record Commit : VerbBase
     
     public static async Task RunAsync(Commit args)
     {
-        var controller = await DocumentController.CreateAsync(args.File);
+        using var controller = await DocumentController.CreateAsync(args.File);
         if (controller == null)
         {
             return;
         }
 
+        await RunAsync(controller, args);
+    }
+
+    public static async Task RunAsync(DocumentController controller, Commit commit)
+    {
         var options = await controller.Accessor.GetOptionsAsync();
 
-        var version = args.Version == null
+        var version = commit.Version == null
             ? await controller.Accessor.GetCurrentVersionAsync()
-            : DocumentVersion.Parse(options.VersioningType, args.Version);
+            : DocumentVersion.Parse(options.VersioningType, commit.Version);
 
         var result = await controller.CommitVersionAsync(version);
 

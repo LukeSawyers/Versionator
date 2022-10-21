@@ -13,7 +13,7 @@ public enum CommitResult
     NoSuchVersion
 }
 
-public class DocumentController
+public class DocumentController : IDisposable
 {
     public static async Task<DocumentController?> CreateAsync(string path)
     {
@@ -30,7 +30,9 @@ public class DocumentController
     public string FilePath { get; }
     public string FileDirectory { get; }
 
-    public DocumentControlInformationAccessor Accessor { get; private set; }
+    public DocumentControlInformationAccessor Accessor { get; }
+
+    private IReadOnlyList<IDisposable> _fileLocks = Array.Empty<IDisposable>();
 
     private DocumentController(string filePath)
     {
@@ -41,6 +43,45 @@ public class DocumentController
 
     public async Task ReinitialiseAsync()
     {
+        await InitialiseCommittedFileLocks();
+    }
+
+    private async Task InitialiseCommittedFileLocks()
+    {
+        DisposeFileLocks();
+
+        var options = await Accessor.GetOptionsAsync();
+
+        if (!options.LockCommitted)
+        {
+            return;
+        }
+
+        var index = await Accessor.GetVersionIndexAsync();
+
+        var versionsToLock = index
+            .Where(p => p.Value.CommittedDate != null)
+            .Select(p => p.Key)
+            .ToArray();
+
+        var locks = new List<IDisposable>();
+
+        foreach (var version in versionsToLock)
+        {
+            var versionedFileName = await GetVersionedFileNameAsync(version, options);
+            var files = GetFilesFromFolder(Accessor.FileStorageFolder, versionedFileName);
+            foreach (var file in files)
+            {
+                var stream = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.None);
+
+                if (!(OperatingSystem.IsMacOS() || OperatingSystem.IsMacCatalyst()))
+                {
+                    stream.Lock(0, 0);
+                }
+            }
+        }
+
+        _fileLocks = locks;
     }
 
     public async Task RenameAsync(string newName)
@@ -74,7 +115,7 @@ public class DocumentController
         };
 
         await Accessor.SaveVersionIndexAsync(index);
-
+        await ReinitialiseAsync();
         return CommitResult.Ok;
     }
 
@@ -112,7 +153,7 @@ public class DocumentController
             versionedFileName
         );
         await Accessor.SetCurrentVersionAsync(version);
-
+        await ReinitialiseAsync();
         return CheckInResult.Ok;
     }
 
@@ -127,6 +168,7 @@ public class DocumentController
             Accessor.FileName
         );
         await Accessor.SetCurrentVersionAsync(version);
+        await ReinitialiseAsync();
     }
 
     private async Task<string> GetVersionedFileNameAsync(DocumentVersion version, DocumentControlOptions? opts = null)
@@ -144,6 +186,8 @@ public class DocumentController
         string dstFileName
     )
     {
+        DisposeFileLocks();
+
         var srcFilePaths = GetFilesFromFolder(srcFolder, srcFileName);
         var srcFileTails = srcFilePaths
             .Select(n => Path.GetFileName(n).Replace(srcFileName, ""))
@@ -167,10 +211,12 @@ public class DocumentController
 
         foreach (var srcFile in srcFilePaths)
         {
-            var tail = Path.GetFileName(srcFile).Replace(srcFileName, ""); 
+            var tail = Path.GetFileName(srcFile).Replace(srcFileName, "");
             var destinationPath = Path.Combine(dstFolder, dstFileName + tail);
             File.Copy(srcFile, destinationPath, true);
         }
+
+        await InitialiseCommittedFileLocks();
     }
 
     private string[] GetFilesFromFolder(string versionFolder, string fileName) =>
@@ -184,5 +230,18 @@ public class DocumentController
     public async Task ExportVersionToFolderAsync(DocumentVersion version, string exportFolder)
     {
         throw new NotImplementedException("TODO");
+    }
+
+    private void DisposeFileLocks()
+    {
+        foreach (var fileLock in _fileLocks)
+        {
+            fileLock.Dispose();
+        }
+    }
+
+    public void Dispose()
+    {
+        DisposeFileLocks();
     }
 }
