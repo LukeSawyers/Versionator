@@ -28,7 +28,14 @@ public class DocumentControlInformationAccessor
     public DocumentControlInformationAccessor(string filePath)
     {
         var fileDirectory = Path.GetDirectoryName(filePath)!;
-        FileName = Path.GetFileName(filePath).Replace(Path.GetExtension(filePath), "");
+
+        FileName = Path.GetFileName(filePath);
+        var ext = Path.GetExtension(filePath);
+        if (!string.IsNullOrEmpty(ext))
+        {
+            FileName = FileName.Replace(ext, "");
+        }
+           
         FileDataFolder = Path.Combine(fileDirectory, $"{DataFolderRoot}.{FileName}");
         FileStorageFolder = Path.Combine(FileDataFolder, "store");
 

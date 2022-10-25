@@ -28,12 +28,13 @@ public record Open : VerbBase
 
             Console.WriteLine();
 
-            await Parser.Default.ParseArguments<CheckOut, CheckIn, ListVersions, Commit>(newArgs)
-                .MapResult<CheckOut, CheckIn, ListVersions, Commit, Task>(
+            await Parser.Default.ParseArguments<CheckOut, CheckIn, ListVersions, Commit, Rename>(newArgs)
+                .MapResult<CheckOut, CheckIn, ListVersions, Commit, Rename, Task>(
                     co => CheckOut.RunAsync(controller, co with { File = args.File }),
                     ci => CheckIn.RunAsync(controller, ci with { File = args.File }),
                     lv => ListVersions.RunAsync(controller, lv with { File = args.File }),
                     cm => Commit.RunAsync(controller, cm with { File = args.File }),
+                    rn => Rename.RunAsync(controller, rn with { File = args.File }),
                     async e => Console.WriteLine(string.Join(Environment.NewLine, e))
                 );
         }

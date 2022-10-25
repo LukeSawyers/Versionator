@@ -30,7 +30,7 @@ public class DocumentController : IDisposable
     public string FilePath { get; }
     public string FileDirectory { get; }
 
-    public DocumentControlInformationAccessor Accessor { get; }
+    public DocumentControlInformationAccessor Accessor { get; private set; }
 
     private IReadOnlyList<FileStream> _fileLocks = Array.Empty<FileStream>();
 
@@ -94,7 +94,40 @@ public class DocumentController : IDisposable
 
     public async Task RenameAsync(string newName)
     {
-        throw new NotImplementedException("TODO");
+        // New Accessor
+        DisposeFileLocks();
+        var newFilePath = Path.Combine(FileDirectory, newName);
+        var newAccessor = new DocumentControlInformationAccessor(newFilePath);
+        
+        // Rename checked out files
+        var checkedOutFiles = GetFilesFromFolder(FileDirectory, Accessor.FileName);
+        foreach (var checkedOutFile in checkedOutFiles)
+        {
+            var newFileName = Path.GetFileName(checkedOutFile).Replace(Accessor.FileName, newName);
+            var dstFilePath = Path.Combine(FileDirectory, newFileName);
+            File.Move(checkedOutFile, dstFilePath);
+        }
+        
+        // Rename stored files
+        var storeFiles = GetFilesFromFolder(Accessor.FileStorageFolder, Accessor.FileName);
+        foreach (var storeFile in storeFiles)
+        {
+            var newFileName = Path.GetFileName(storeFile).Replace(Accessor.FileName, newName);
+            var dstFilePath = Path.Combine(Accessor.FileStorageFolder, newFileName);
+            File.Move(storeFile, dstFilePath);
+        }
+        
+        // Rename store folder
+        if (Directory.Exists(newAccessor.FileDataFolder))
+        {
+            Directory.Delete(newAccessor.FileDataFolder);
+        }
+
+        Directory.Move(Accessor.FileDataFolder, newAccessor.FileDataFolder);
+
+        Accessor = newAccessor;
+        
+        await ReinitialiseAsync();
     }
 
     public async Task MoveAsync(string newDirectory)
@@ -227,8 +260,8 @@ public class DocumentController : IDisposable
         await InitialiseCommittedFileLocks();
     }
 
-    private string[] GetFilesFromFolder(string versionFolder, string fileName) =>
-        Directory.GetFiles(versionFolder, $"{fileName}*", SearchOption.TopDirectoryOnly);
+    private string[] GetFilesFromFolder(string folder, string fileName) =>
+        Directory.GetFiles(folder, $"{fileName}*", SearchOption.TopDirectoryOnly);
 
     public async Task CreateNewVersionFromOldAsync(DocumentVersion oldVersion, VersionNumber increment)
     {
