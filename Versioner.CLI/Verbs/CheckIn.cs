@@ -7,19 +7,23 @@ public record CheckIn : VerbBase
     [Option('v', Required = false, HelpText = "The version to check in. If blank the current version will be used")]
     public string? Version { get; set; }
 
-    [Option('c', "unknown", Required = false, HelpText = "Misc changes that were made in this version. Semi-colon separated")]
+    [Option('c', "unknown", Required = false,
+        HelpText = "Misc changes that were made in this version. Semi-colon separated")]
     public IEnumerable<string> UnknownChanges { get; set; } = Array.Empty<string>();
 
-    [Option('a', "added", Required = false, HelpText = "Additions that were made in this version. Semi-colon separated")]
+    [Option('a', "added", Required = false,
+        HelpText = "Additions that were made in this version. Semi-colon separated")]
     public IEnumerable<string> AdditionChanges { get; set; } = Array.Empty<string>();
 
-    [Option('m', "changed", Required = false, HelpText = "Modifications that were made in this version. Semi-colon separated")]
+    [Option('m', "changed", Required = false,
+        HelpText = "Modifications that were made in this version. Semi-colon separated")]
     public IEnumerable<string> ModificationChanges { get; set; } = Array.Empty<string>();
 
     [Option('r', "fixed", Required = false, HelpText = "Fixups that were made in this version. Semi-colon separated")]
     public IEnumerable<string> FixupChanges { get; set; } = Array.Empty<string>();
 
-    [Option('d', "deleted", Required = false, HelpText = "Deletions that were made in this version. Semi-colon separated")]
+    [Option('d', "deleted", Required = false,
+        HelpText = "Deletions that were made in this version. Semi-colon separated")]
     public IEnumerable<string> DeletionChanges { get; set; } = Array.Empty<string>();
 
     public static async Task RunAsync(CheckIn args)
@@ -35,7 +39,7 @@ public record CheckIn : VerbBase
 
     public static async Task RunAsync(DocumentController controller, CheckIn args)
     {
-                IEnumerable<ChangeLog> GetChanges(IEnumerable<string> tokens, ChangeType type)
+        IEnumerable<ChangeLog> GetChanges(IEnumerable<string> tokens, ChangeType type)
         {
             var str = string.Join(' ', tokens);
 

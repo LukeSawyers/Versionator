@@ -32,7 +32,7 @@ public class DocumentController : IDisposable
 
     public DocumentControlInformationAccessor Accessor { get; }
 
-    private IReadOnlyList<IDisposable> _fileLocks = Array.Empty<IDisposable>();
+    private IReadOnlyList<FileStream> _fileLocks = Array.Empty<FileStream>();
 
     private DocumentController(string filePath)
     {
@@ -64,7 +64,7 @@ public class DocumentController : IDisposable
             .Select(p => p.Key)
             .ToArray();
 
-        var locks = new List<IDisposable>();
+        var locks = new List<FileStream>();
 
         foreach (var version in versionsToLock)
         {
@@ -72,11 +72,19 @@ public class DocumentController : IDisposable
             var files = GetFilesFromFolder(Accessor.FileStorageFolder, versionedFileName);
             foreach (var file in files)
             {
-                var stream = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.None);
-
-                if (!(OperatingSystem.IsMacOS() || OperatingSystem.IsMacCatalyst()))
+                try
                 {
-                    stream.Lock(0, 0);
+                    var stream = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.None);
+
+                    if (!(OperatingSystem.IsMacOS() || OperatingSystem.IsMacCatalyst()))
+                    {
+                        stream.Lock(0, 0);
+                    }
+                    
+                    locks.Add(stream);
+                }
+                catch
+                {
                 }
             }
         }
@@ -236,6 +244,17 @@ public class DocumentController : IDisposable
     {
         foreach (var fileLock in _fileLocks)
         {
+            if (!(OperatingSystem.IsMacOS() || OperatingSystem.IsMacCatalyst()))
+            {
+                try
+                {
+                    fileLock.Unlock(0, 0);
+                }
+                catch
+                {
+                }
+            }
+
             fileLock.Dispose();
         }
     }
