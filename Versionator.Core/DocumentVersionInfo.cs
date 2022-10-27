@@ -1,6 +1,6 @@
 using System;
 
-namespace Versioner.Core;
+namespace Versionator.Core;
 
 /// <param name="CreationDate">The date that this version was created</param>
 /// <param name="LastCheckInDate">The date that this version was last edited</param>
@@ -21,4 +21,6 @@ public record DocumentVersionInfo(
     )
     {
     }
+
+    public bool IsCommitted => Committer != null;
 }

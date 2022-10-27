@@ -1,6 +1,7 @@
-
 using CommandLine;
-using Versioner.Core;
+using Versionator.Core;
+
+namespace Versionator.CLI.Verbs;
 
 [Verb("commit", aliases: new[] { "--cm" })]
 public record Commit : VerbBase

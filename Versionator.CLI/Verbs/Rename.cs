@@ -1,5 +1,7 @@
 using CommandLine;
-using Versioner.Core;
+using Versionator.Core;
+
+namespace Versionator.CLI.Verbs;
 
 [Verb("rename", aliases: new[] { "--rn" }, HelpText = "Rename the document")]
 public record Rename : VerbBase

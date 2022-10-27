@@ -1,5 +1,7 @@
 using CommandLine;
-using Versioner.Core;
+using Versionator.Core;
+
+namespace Versionator.CLI.Verbs;
 
 [Verb("check-in", aliases: new[] { "--ci" }, HelpText = "Check in specified version of the document")]
 public record CheckIn : VerbBase

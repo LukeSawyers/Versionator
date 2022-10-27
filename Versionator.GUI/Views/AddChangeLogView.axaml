@@ -1,0 +1,30 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:viewModels="clr-namespace:Versionator.GUI.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="Versionator.GUI.Views.AddChangeLogView">
+    
+    <Design.DataContext>
+        <viewModels:AddChangeLogViewModel />
+    </Design.DataContext>
+    
+    <DockPanel>
+        
+        <ComboBox
+            DockPanel.Dock="Left"
+            Width="150"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            FontWeight="Bold"
+            Foreground="{Binding TypeColor}"
+            Items="{Binding AllTypes}"
+            SelectedItem="{Binding Type}"/>
+        
+        <TextBox
+            DockPanel.Dock="Right"
+            Text="{Binding Description}"/>
+    </DockPanel>
+
+</UserControl>

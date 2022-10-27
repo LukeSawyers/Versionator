@@ -1,6 +1,6 @@
 ﻿// See https://aka.ms/new-console-template for more information
 
-namespace Versioner.Core;
+namespace Versionator.Core;
 
 public enum ChangeType
 {

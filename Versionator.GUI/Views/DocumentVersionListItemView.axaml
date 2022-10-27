@@ -1,0 +1,83 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:viewModels="clr-namespace:Versionator.GUI.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="Versionator.GUI.Views.DocumentVersionListItemView">
+
+    <Design.DataContext>
+        <viewModels:DocumentVersionListItemViewModel />
+    </Design.DataContext>
+
+    <DockPanel LastChildFill="False">
+        
+        <StackPanel
+            DockPanel.Dock="Left">
+            <TextBlock
+                FontSize="14"
+                Text="{Binding Version}" />
+            <TextBlock
+                FontSize="10"
+                Foreground="Gray"
+                Text="{Binding VersionInfo.LastEditor}" />
+        </StackPanel>
+
+        <Panel DockPanel.Dock="Right">
+            <Image
+                IsVisible="{Binding VersionInfo.IsCommitted}"
+                Source="/Assets/locked.png"
+                Width="15"
+                Height="15"
+                VerticalAlignment="Center"
+                HorizontalAlignment="Center" />
+        
+            <Image
+                IsVisible="{Binding !VersionInfo.IsCommitted}"
+                Source="/Assets/unlocked.png"
+                Width="15"
+                Height="15"
+                VerticalAlignment="Center"
+                HorizontalAlignment="Center" />
+        </Panel>
+        
+        <Button
+            DockPanel.Dock="Right"
+            Command="{Binding CheckOut}"
+            ToolTip.Tip="Check out this version for editing">
+            <Panel>
+                <Image
+                    Source="/Assets/out.png"
+                    Width="20"
+                    Height="20"
+                    VerticalAlignment="Center"
+                    HorizontalAlignment="Center" />
+            </Panel>
+        </Button>
+
+        <Button
+            DockPanel.Dock="Right"
+            IsVisible="{Binding !VersionInfo.IsCommitted}"
+            Command="{Binding Commit}"
+            ToolTip.Tip="Commit this version">
+            <Panel>
+                <Image
+                    Source="/Assets/locked.png"
+                    Width="20"
+                    Height="20"
+                    VerticalAlignment="Center"
+                    HorizontalAlignment="Center" />
+            </Panel>
+        </Button>
+
+        <TextBlock
+            DockPanel.Dock="Right"
+            IsVisible="{Binding IsCheckedOut}"
+            Foreground="Gray"
+            FontSize="10"
+            VerticalAlignment="Center"
+            HorizontalAlignment="Right"
+            Text="Checked Out" />
+        
+    </DockPanel>
+</UserControl>

@@ -4,6 +4,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Versionator.Core", "Version
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Versionator.CLI", "Versionator.CLI\Versionator.CLI.csproj", "{7FA2E474-DC2A-4A75-993A-373EC26DE3C6}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "App", "App", "{C06EA30A-2B43-4EBD-A400-4125CABBB3B4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Versionator.GUI", "Versionator.GUI\Versionator.GUI.csproj", "{7737FDC1-D6A4-4D39-8BC7-6DB231445852}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -18,5 +22,13 @@ Global
 		{7FA2E474-DC2A-4A75-993A-373EC26DE3C6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7FA2E474-DC2A-4A75-993A-373EC26DE3C6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7FA2E474-DC2A-4A75-993A-373EC26DE3C6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7737FDC1-D6A4-4D39-8BC7-6DB231445852}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7737FDC1-D6A4-4D39-8BC7-6DB231445852}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7737FDC1-D6A4-4D39-8BC7-6DB231445852}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7737FDC1-D6A4-4D39-8BC7-6DB231445852}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{7FA2E474-DC2A-4A75-993A-373EC26DE3C6} = {C06EA30A-2B43-4EBD-A400-4125CABBB3B4}
+		{7737FDC1-D6A4-4D39-8BC7-6DB231445852} = {C06EA30A-2B43-4EBD-A400-4125CABBB3B4}
 	EndGlobalSection
 EndGlobal

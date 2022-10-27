@@ -1,5 +1,7 @@
 using CommandLine;
-using Versioner.Core;
+using Versionator.Core;
+
+namespace Versionator.CLI.Verbs;
 
 [Verb("open", aliases: new[] { "--op" }, HelpText = "Open a file to run version commands against")]
 public record Open : VerbBase

@@ -6,7 +6,6 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <AssemblyName>versionator</AssemblyName>
-        <RootNamespace>Versioner.CLI</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>

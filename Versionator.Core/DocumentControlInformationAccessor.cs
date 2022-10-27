@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
-namespace Versioner.Core;
+namespace Versionator.Core;
 
 public class DocumentControlInformationAccessor
 {

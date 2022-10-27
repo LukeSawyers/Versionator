@@ -1,0 +1,56 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:viewModels="clr-namespace:Versionator.GUI.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="Versionator.GUI.Views.SelectedDocumentVersionView">
+
+    <Design.DataContext>
+        <viewModels:SelectedDocumentVersionViewModel />
+    </Design.DataContext>
+
+    <StackPanel>
+
+        <TextBlock 
+            FontWeight="Bold"
+            FontSize="20"
+            Text="{Binding Version}" />
+
+        <StackPanel Orientation="Horizontal">
+            <TextBlock Text="Created: " />
+            <TextBlock Text="{Binding VersionInfo.CreationDate}" />
+        </StackPanel>
+
+        <StackPanel Orientation="Horizontal">
+            <TextBlock Text="Creator: " />
+            <TextBlock Text="{Binding VersionInfo.Creator}" />
+        </StackPanel>
+
+        <StackPanel Orientation="Horizontal">
+            <TextBlock Text="Last Edited: " />
+            <TextBlock Text="{Binding VersionInfo.LastCheckInDate}" />
+        </StackPanel>
+
+        <StackPanel Orientation="Horizontal">
+            <TextBlock Text="Last Editor: " />
+            <TextBlock Text="{Binding VersionInfo.LastEditor}" />
+        </StackPanel>
+
+        <StackPanel
+            Orientation="Horizontal"
+            IsVisible="{Binding VersionInfo.IsCommitted}">
+            <TextBlock Text="Committed: " />
+            <TextBlock Text="{Binding VersionInfo.CommittedDate}" />
+        </StackPanel>
+
+        <StackPanel Orientation="Horizontal" IsVisible="{Binding VersionInfo.IsCommitted}">
+            <TextBlock Text="Committer: " />
+            <TextBlock Text="{Binding VersionInfo.Committer}" />
+        </StackPanel>
+
+        <TextBlock Text="Change Log: "></TextBlock>
+        <ListBox Items="{Binding ChangeLogs}"></ListBox>
+    </StackPanel>
+
+</UserControl>

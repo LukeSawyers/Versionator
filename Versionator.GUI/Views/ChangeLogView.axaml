@@ -1,0 +1,39 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:viewModels="clr-namespace:Versionator.GUI.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="Versionator.GUI.Views.ChangeLogView">
+    
+    <Design.DataContext>
+        <viewModels:ChangeLogViewModel />
+    </Design.DataContext>
+    
+    <Grid ColumnDefinitions="200, *" RowDefinitions="20, *">
+        <TextBlock
+            Grid.Column="0"
+            Grid.Row="0"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            FontWeight="Bold"
+            Text="{Binding Log.Type}"
+            Foreground="{Binding TypeColor}"/>
+        
+        <TextBlock
+            Grid.Column="0"
+            Grid.Row="1"
+            Text="{Binding Log.Timestamp}"/>
+        
+        <TextBlock
+            Grid.Column="1"
+            Grid.Row="0"
+            Text="{Binding Log.Description}"/>
+        
+        <TextBlock
+            Grid.Column="1"
+            Grid.Row="1"
+            Text="{Binding Log.Author}"/>
+    </Grid>
+
+</UserControl>

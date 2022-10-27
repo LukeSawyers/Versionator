@@ -1,5 +1,7 @@
 using CommandLine;
-using Versioner.Core;
+using Versionator.Core;
+
+namespace Versionator.CLI.Verbs;
 
 [Verb("list-versions", aliases: new[] { "--lv" }, HelpText = "List all available versions of a file")]
 public record ListVersions : VerbBase

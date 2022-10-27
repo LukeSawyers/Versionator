@@ -4,14 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Versioner.Core;
-
-public enum CommitResult
-{
-    Ok,
-    AlreadyCommitted,
-    NoSuchVersion
-}
+namespace Versionator.Core;
 
 public class DocumentController : IDisposable
 {

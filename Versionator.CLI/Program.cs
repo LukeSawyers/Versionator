@@ -1,6 +1,7 @@
 ﻿// See https://aka.ms/new-console-template for more information
 
 using CommandLine;
+using Versionator.CLI.Verbs;
 
 await Parser.Default.ParseArguments<Open, CheckOut, CheckIn, ListVersions, Commit, Rename>(args)
     .MapResult<Open, CheckOut, CheckIn, ListVersions, Commit, Rename, Task>(

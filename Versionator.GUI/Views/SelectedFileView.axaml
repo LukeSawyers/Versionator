@@ -1,0 +1,149 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:viewModels="clr-namespace:Versionator.GUI.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="Versionator.GUI.Views.SelectedFileView">
+
+    <Design.DataContext>
+        <viewModels:SelectedFileViewModel />
+    </Design.DataContext>
+
+    <StackPanel>
+        <DockPanel LastChildFill="False">
+            <StackPanel
+                DockPanel.Dock="Left">
+                <TextBlock
+                    FontSize="24"
+                    FontWeight="Bold"
+                    Text="{Binding Controller.Accessor.FileName}" />
+                <TextBlock
+                    FontSize="12"
+                    Text="{Binding Controller.FilePath}"
+                    Foreground="Gray" />
+            </StackPanel>
+
+            <Button
+                DockPanel.Dock="Right"
+                Command="{Binding OpenFileLocation}"
+                ToolTip.Tip="Open File Location">
+                <Panel>
+                    <Image
+                        Source="/Assets/open-folder.png"
+                        Width="20"
+                        Height="20"
+                        VerticalAlignment="Center"
+                        HorizontalAlignment="Center" />
+                </Panel>
+            </Button>
+
+            <Button
+                DockPanel.Dock="Right"
+                Command="{Binding OpenFile}"
+                ToolTip.Tip="Open File">
+                <Panel>
+                    <Image
+                        Source="/Assets/open-file.png"
+                        Width="20"
+                        Height="20"
+                        VerticalAlignment="Center"
+                        HorizontalAlignment="Center" />
+                </Panel>
+            </Button>
+
+            <Button
+                DockPanel.Dock="Right"
+                IsEnabled="{Binding !IsCheckingIn}"
+                Command="{Binding StartCheckin}"
+                ToolTip.Tip="Open File">
+                <Panel>
+                    <Image
+                        Source="/Assets/in.png"
+                        Width="20"
+                        Height="20"
+                        VerticalAlignment="Center"
+                        HorizontalAlignment="Center" />
+                </Panel>
+            </Button>
+
+        </DockPanel>
+
+        <StackPanel IsVisible="{Binding IsCheckingIn}">
+            
+            <DockPanel LastChildFill="False">
+                
+                <TextBlock 
+                    DockPanel.Dock="Left"
+                    FontWeight="SemiBold" 
+                    FontSize="14" 
+                    VerticalAlignment="Center"
+                    Text="Check In Version:"/>           
+                
+                <TextBox
+                    DockPanel.Dock="Left"
+                    Width="150"
+                    FontSize="14" 
+                    VerticalAlignment="Center"
+                    Text="{Binding CheckInVersion}"/>
+                
+                <Button
+                    DockPanel.Dock="Right"
+                    Command="{Binding CancelCheckin}"
+                    ToolTip.Tip="Cancel Check In">
+                    <Panel Background="IndianRed">
+                        <Image
+                            Source="/Assets/minus.png"
+                            Width="20"
+                            Height="20"
+                            VerticalAlignment="Center"
+                            HorizontalAlignment="Center" />
+                    </Panel>
+                </Button>
+                
+                <Button
+                    DockPanel.Dock="Right"
+                    Command="{Binding CompleteCheckin}"
+                    ToolTip.Tip="Complete Check In">
+                    <Panel>
+                        <Image
+                            Source="/Assets/in.png"
+                            Width="20"
+                            Height="20"
+                            VerticalAlignment="Center"
+                            HorizontalAlignment="Center" />
+                    </Panel>
+                </Button>
+                
+            </DockPanel>
+            
+            <ListBox Items="{Binding ChangeLogItems}"/>
+            
+            <Button
+                Command="{Binding AddChangeLog}"
+                ToolTip.Tip="Add another changelog">
+                <Panel>
+                    <Image
+                        Source="/Assets/plus.png"
+                        Width="20"
+                        Height="20"
+                        VerticalAlignment="Center"
+                        HorizontalAlignment="Center" />
+                </Panel>
+            </Button>
+            
+        </StackPanel>
+        
+        <SplitView
+            IsPaneOpen="True"
+            DisplayMode="Inline"
+            OpenPaneLength="400"
+            Content="{Binding SelectedVersion}">
+            <SplitView.Pane>
+                <ListBox
+                    Items="{Binding Versions}"
+                    SelectedItem="{Binding SelectedVersionItem}" />
+            </SplitView.Pane>
+        </SplitView>
+    </StackPanel>
+</UserControl>

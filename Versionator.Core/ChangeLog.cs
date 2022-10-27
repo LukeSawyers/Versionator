@@ -1,6 +1,6 @@
 using System;
 
-namespace Versioner.Core;
+namespace Versionator.Core;
 
 public record ChangeLog(DateTime Timestamp, string Author, ChangeType Type, string Description)
 {

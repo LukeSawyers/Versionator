@@ -1,6 +1,6 @@
 using System.Threading.Tasks;
 
-namespace Versioner.Core;
+namespace Versionator.Core;
 
 public static class DocumentControllerExtensions
 {

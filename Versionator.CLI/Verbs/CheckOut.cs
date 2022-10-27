@@ -1,6 +1,7 @@
-
 using CommandLine;
-using Versioner.Core;
+using Versionator.Core;
+
+namespace Versionator.CLI.Verbs;
 
 [Verb("check-out", aliases: new[] { "--co" }, HelpText = "Check out the specified version of the document")]
 public record CheckOut : VerbBase

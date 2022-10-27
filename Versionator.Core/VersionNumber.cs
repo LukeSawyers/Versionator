@@ -1,4 +1,4 @@
-namespace Versioner.Core;
+namespace Versionator.Core;
 
 public enum VersionNumber
 {

@@ -2,7 +2,7 @@ using System;
 using System.Linq;
 using OneOf;
 
-namespace Versioner.Core;
+namespace Versionator.Core;
 
 public class DocumentVersion : OneOfBase<string, Version>
 {
