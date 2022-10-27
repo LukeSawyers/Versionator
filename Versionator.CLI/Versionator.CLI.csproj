@@ -6,6 +6,7 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <AssemblyName>versionator</AssemblyName>
+        <RootNamespace>Versioner.CLI</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
@@ -13,7 +14,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Versioner.Core\Versioner.Core.csproj" />
+      <ProjectReference Include="..\Versionator.Core\Versionator.Core.csproj" />
     </ItemGroup>
 
 </Project>
